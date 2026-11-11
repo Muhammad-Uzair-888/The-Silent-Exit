@@ -7,6 +7,8 @@
         "**/*.pidb": true,
         "**/*.suo": true,
         "**/*.user": true,
+        "**/*.csproj": true,
+        "**/*.sln": true,
         "**/*.userprefs": true,
         "**/*.unityproj": true,
         "**/*.dll": true,
@@ -50,6 +52,19 @@
         "ProjectSettings/": true,
         "temp/": true,
         "Temp/": true
+    },
+    "search.exclude": {
+        "**/*.csproj": true,
+        "**/*.sln": true,
+        "**/Library": true,
+        "**/Temp": true,
+        "**/Logs": true,
+        "**/obj": true
+    },
+    "files.watcherExclude": {
+        "**/Library/**": true,
+        "**/Temp/**": true,
+        "**/Logs/**": true
     },
     "dotnet.defaultSolution": "The-Silent-Exit.sln"
 }
