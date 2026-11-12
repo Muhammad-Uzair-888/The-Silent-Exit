@@ -12,8 +12,6 @@
         "**/*.dll": true,
         "**/*.exe": true,
         "**/*.pdf": true,
-        "**/*.csproj": true,
-        "**/*.sln": true,
         "**/*.mid": true,
         "**/*.midi": true,
         "**/*.wav": true,

@@ -1,22 +1,25 @@
 # Implementation Status
 
-## Current Project Baseline
-* **Unity Version:** Unity 2022.3.62f3 (URP)
-* **Scene:** `Assets/Project/Scenes/GamePlay.unity`
-* **Input Mode:** Input System Package (Both active)
-* **Controller:** `ModularFirstPersonController` (Legacy input preserved intact, camera hierarchy retained)
+## Current Milestone: Phase 1 Completed
+* **Active Scene:** `Assets/Project/Scenes/GamePlay.unity` (saved & verified)
+* **Environment Architecture:** Fully assembled matching map layout and proportions.
+* **Batching & Performance:** 291 active renderers, all environment geometry set to `Static`.
+* **Materials & Shaders:** Zero missing materials or magenta shaders; legacy shaders upgraded to URP Lit.
 
-## Inspection & Verification Matrix
+## Room & Component Verification Matrix
 
-| Area | Current State | Required Work | Risk / Note |
+| Zone / Room | Hierarchy Path | Status | Verification Details |
 | :--- | :--- | :--- | :--- |
-| **Level Geometry** | Blockout prefabs exist in `Assets/Things` | Assemble modular walls, floors, ceilings, and portals according to map layout | Strictly avoid primitive cubes or ProBuilder for walls per AGENTS.md |
-| **Poolrooms Styling** | Clean FBX models ready; generated prefabs exist | Construct P1–P9 using curved walls, round columns, arches, flooded pools in P4 & P6 | Match reference PDF lighting and water aesthetics |
-| **Backrooms Styling** | Modular sets ready in 2 packs | Construct B1–B4 and F1 exit room using wallpaper, carpet, acoustic ceiling, and pillars | Yellow fluorescent tone matching reference guide |
-| **Materials / Shaders** | Backrooms 1 & Golem use Standard shader; Water needs engine shader | Convert standard materials to URP Lit; configure URP water shader | Essential to fix pink/unlit shader artifacts |
-| **Player Controller** | `FirstPersonController Variant` in Things | Validate placement in B1 (START), verify camera & movement in URP | Do not alter `FirstPersonController.cs` |
-| **Monster (Golem)** | FBX and prefab available; 13 animation clips verified | Set up URP material, create Animator Controller using clips (`walk`, `rage`, `idle`, `hit`), write simple sound-detection AI | "It can't see you. It hears the water." mechanic |
-| **Checkpoints & Exit** | Map specifies CP1, CP2, CP3, START, EXIT | Implement simple trigger checkpoints and exit volume | Keep code clean and beginner-friendly |
+| **B1 (Start)** | `Environment/Backrooms/B1_Start` | Constructed | Player spawn positioned at (-12, 0.2, 2); full floor/walls/ceiling |
+| **B2 (Mal;ze)** | `Environment/Backrooms/B2_Maze` | Constructed | Labyrinth partitions, side pillars, doorways to B1 and B3 |
+| **B3 (CP1)** | `Environment/Backrooms/B3_CP1` | Constructed | Checkpoint 1 chamber, acoustic ceiling, doorway to B4 |
+| **B4 (Trans)**| `Environment/Backrooms/B4_Transition` | Constructed | Upper transition chamber, connecting opening to P1 |
+| **P1–P3 (Upper)**| `Environment/Poolrooms/P1_Transition..P3_CP3` | Constructed | White tile floors, walls, columns, arched portals, CP2/CP3 chambers |
+| **P4–P6 (Core)** | `Environment/Poolrooms/P4..P6` | Constructed | P6 submerged basin + P4 flooded corridor with water surfaces |
+| **P7–P9 (Lower)**| `Environment/Poolrooms/P7..P9` | Constructed | Lower white tile rooms, column supports, inter-room arches |
+| **F1 (Final Exit)**| `Environment/Poolrooms/F1_Exit` | Constructed | Dark Poolroom style, illuminated red EXIT sign with red point light |
+| **Player FPC** | `FirstPersonController` | Preserved | Legacy script & original camera untouched; grounded in B1 Start |
+| **Monster / AI** | `Assets/Project/Art/Monster/...` | Pending Phase 2 | Intact; awaiting Phase 2 approval |
 
-## Next Milestone
-* Awaiting user approval to commence **Phase 1: Material/Shader URP Validation & Core Level Assembly**.
+## Next Step
+* Awaiting user review and explicit approval of Phase 1 architecture in Unity before starting Phase 2.
