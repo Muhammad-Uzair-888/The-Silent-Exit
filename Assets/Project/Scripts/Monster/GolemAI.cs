@@ -204,7 +204,13 @@ namespace SilentExit.Monster
             {
                 lastHeardSoundPos = soundPos;
 
-                if (soundType == SoundType.WaterSplash)
+                if (soundType == SoundType.Distraction)
+                {
+                    // Lured by throwable distraction item - investigate the exact landing position!
+                    SetState(GolemState.Investigate);
+                    agent.SetDestination(soundPos);
+                }
+                else if (soundType == SoundType.WaterSplash)
                 {
                     // "It hears the water" - Immediate aggressive chase!
                     if (animator != null && currentState != GolemState.Chase)

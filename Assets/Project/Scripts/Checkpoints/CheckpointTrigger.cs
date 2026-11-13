@@ -47,5 +47,11 @@ namespace SilentExit.Checkpoints
                 }
             }
         }
+
+        // Resets the checkpoint trigger so it can be re-activated on a new attempt
+        public void ResetCheckpoint()
+        {
+            isActivated = false;
+        }
     }
 }
