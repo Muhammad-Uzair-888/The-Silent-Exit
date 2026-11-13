@@ -171,6 +171,11 @@ public class FirstPersonController : MonoBehaviour
 
         sprintBarCG = GetComponentInChildren<CanvasGroup>();
 
+        if (sprintSlider == null)
+        {
+            sprintSlider = GetComponentInChildren<Slider>(true);
+        }
+
         if(useSprintBar)
         {
             sprintBarBG.gameObject.SetActive(true);
@@ -421,7 +426,8 @@ public class FirstPersonController : MonoBehaviour
                     }
                 }
 
-                rb.AddForce(velocityChange, ForceMode.VelocityChange);
+                // Uses ForceMode.Acceleration (a = deltaV / deltaTime) as taught in class
+                rb.AddForce(velocityChange / Time.fixedDeltaTime, ForceMode.Acceleration);
             }
             // All movement calculations while walking
             else
@@ -442,7 +448,8 @@ public class FirstPersonController : MonoBehaviour
                 velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
                 velocityChange.y = 0;
 
-                rb.AddForce(velocityChange, ForceMode.VelocityChange);
+                // Uses ForceMode.Acceleration (a = deltaV / deltaTime) as taught in class
+                rb.AddForce(velocityChange / Time.fixedDeltaTime, ForceMode.Acceleration);
             }
         }
 

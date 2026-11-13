@@ -48,6 +48,14 @@ namespace SilentExit.Monster
         public Animator animator;
         public GameManager.GameManager gameManager;
 
+        [Header("Audio Output")]
+        public AudioSource audioSource;
+        public AudioClip[] footstepClips;
+        public AudioClip growlClip;
+        public AudioClip attackClip;
+        public float footstepInterval = 0.65f;
+        private float footstepTimer = 0f;
+
         // Private AI variables
         private NavMeshAgent agent;
         private Vector3 spawnPosition;
@@ -75,6 +83,11 @@ namespace SilentExit.Monster
 
             spawnPosition = transform.position;
             spawnRotation = transform.rotation;
+
+            if (audioSource == null)
+            {
+                audioSource = GetComponent<AudioSource>();
+            }
         }
 
         void Start()
@@ -118,10 +131,19 @@ namespace SilentExit.Monster
                 if (isMoving)
                 {
                     animator.SetFloat("Walk", 1f);
+
+                    // Footstep sound timing while walking
+                    footstepTimer += Time.deltaTime;
+                    if (footstepTimer >= footstepInterval)
+                    {
+                        footstepTimer = 0f;
+                        PlayFootstepSound();
+                    }
                 }
                 else
                 {
                     animator.SetFloat("Walk", 0f);
+                    footstepTimer = 0f;
                 }
             }
 
@@ -322,12 +344,14 @@ namespace SilentExit.Monster
                     agent.isStopped = false;
                     agent.speed = investigateSpeed;
                     agent.SetDestination(lastHeardSoundPos);
+                    PlayGrowlSound();
                     break;
 
                 case GolemState.Chase:
                     agent.isStopped = false;
                     agent.speed = chaseSpeed;
                     agent.SetDestination(lastHeardSoundPos);
+                    PlayGrowlSound();
                     break;
 
                 case GolemState.Search:
@@ -351,6 +375,7 @@ namespace SilentExit.Monster
                     {
                         animator.SetTrigger("Hit");
                     }
+                    PlayAttackSound();
                     if (gameManager != null)
                     {
                         gameManager.OnPlayerCaught();
@@ -399,6 +424,40 @@ namespace SilentExit.Monster
             currentWaypointIndex = 0;
             recentFootstepCount = 0;
             SetState(GolemState.Patrol);
+        }
+
+        // Plays a footstep sound from the assigned footstep clips
+        private void PlayFootstepSound()
+        {
+            if (audioSource != null && footstepClips != null && footstepClips.Length > 0)
+            {
+                int idx = Random.Range(0, footstepClips.Length);
+                if (footstepClips[idx] != null)
+                {
+                    audioSource.PlayOneShot(footstepClips[idx], 0.7f);
+                }
+            }
+        }
+
+        // Plays the growl / breathing sound
+        private void PlayGrowlSound()
+        {
+            if (audioSource != null && growlClip != null)
+            {
+                if (!audioSource.isPlaying)
+                {
+                    audioSource.PlayOneShot(growlClip, 0.9f);
+                }
+            }
+        }
+
+        // Plays the aggressive attack sound
+        private void PlayAttackSound()
+        {
+            if (audioSource != null && attackClip != null)
+            {
+                audioSource.PlayOneShot(attackClip, 1.0f);
+            }
         }
     }
 }
