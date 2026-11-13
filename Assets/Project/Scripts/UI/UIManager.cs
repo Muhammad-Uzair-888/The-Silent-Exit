@@ -10,6 +10,20 @@ namespace SilentExit.UI
     /// </summary>
     public class UIManager : MonoBehaviour
     {
+        [Header("Title Screen")]
+        public GameObject titleScreenPanel;
+        public Button titlePlayButton;
+        public GameObject hudContainer;
+
+        [Header("Global Level Timer")]
+        public Slider levelTimerSlider;
+        public Text levelTimerText;
+        public GameObject timeExceededPanel;
+        public Button timeExceededRestartButton;
+
+        [Header("Death and Respawn Fade")]
+        public Image fadeOverlayImage;
+
         [Header("Heart HUD")]
         public Image[] heartImages = new Image[3];
         public Color heartActiveColor = new Color(0.92f, 0.15f, 0.15f, 1f);
@@ -50,6 +64,18 @@ namespace SilentExit.UI
             {
                 victoryPanel.SetActive(false);
             }
+            if (timeExceededPanel != null)
+            {
+                timeExceededPanel.SetActive(false);
+            }
+            if (fadeOverlayImage != null)
+            {
+                fadeOverlayImage.gameObject.SetActive(false);
+                SetFadeAlpha(0f);
+            }
+
+            // Ensure title screen starts visible and gameplay HUD hidden
+            ShowTitleScreen();
 
             // Hook up audio mute toggle if assigned
             if (audioMuteToggle == null)
@@ -148,6 +174,90 @@ namespace SilentExit.UI
         public void OnAudioToggleChanged(bool isMuted)
         {
             AudioListener.pause = isMuted;
+        }
+
+        // Shows the initial Title Screen and hides gameplay HUD
+        public void ShowTitleScreen()
+        {
+            if (titleScreenPanel != null)
+            {
+                titleScreenPanel.SetActive(true);
+            }
+            if (hudContainer != null)
+            {
+                hudContainer.SetActive(false);
+            }
+            if (levelTimerSlider != null)
+            {
+                levelTimerSlider.gameObject.SetActive(false);
+            }
+            Transform reticle = transform.Find("Reticle");
+            if (reticle != null)
+            {
+                reticle.gameObject.SetActive(false);
+            }
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        // Hides Title Screen and shows gameplay HUD
+        public void HideTitleScreen()
+        {
+            if (titleScreenPanel != null)
+            {
+                titleScreenPanel.SetActive(false);
+            }
+            if (hudContainer != null)
+            {
+                hudContainer.SetActive(true);
+            }
+            if (levelTimerSlider != null)
+            {
+                levelTimerSlider.gameObject.SetActive(true);
+            }
+            Transform reticle = transform.Find("Reticle");
+            if (reticle != null)
+            {
+                reticle.gameObject.SetActive(true);
+            }
+        }
+
+        // Updates the single 60-second level countdown bar and remaining seconds text
+        public void UpdateTimerDisplay(float remainingTime, float maxTime)
+        {
+            if (levelTimerSlider != null)
+            {
+                levelTimerSlider.value = Mathf.Clamp01(remainingTime / maxTime);
+            }
+            if (levelTimerText != null)
+            {
+                int sec = Mathf.CeilToInt(remainingTime);
+                levelTimerText.text = "TIME: " + sec.ToString() + "s";
+            }
+        }
+
+        // Displays the horror-styled Time Exceeded fail state panel
+        public void ShowTimeExceeded()
+        {
+            if (timeExceededPanel != null)
+            {
+                timeExceededPanel.SetActive(true);
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+        }
+
+        // Sets the alpha of the death/respawn black overlay image
+        public void SetFadeAlpha(float alpha)
+        {
+            if (fadeOverlayImage != null)
+            {
+                bool isVisible = alpha > 0.001f;
+                fadeOverlayImage.gameObject.SetActive(isVisible);
+                Color c = fadeOverlayImage.color;
+                c.a = Mathf.Clamp01(alpha);
+                fadeOverlayImage.color = c;
+            }
         }
     }
 }

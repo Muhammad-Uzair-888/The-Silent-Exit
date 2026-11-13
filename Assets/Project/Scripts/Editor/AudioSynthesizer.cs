@@ -192,6 +192,24 @@ namespace SilentExit.EditorScripts
                 SaveWav(baseDir + "Environment/env_water_drip_0" + step + ".wav", data);
             }
 
+            // 15: Distraction item impact clatter
+            {
+                float dur = 0.4f;
+                int count = (int)(dur * SampleRate);
+                float[] data = new float[count];
+                var rng = new System.Random(900);
+                for (int i = 0; i < count; i++)
+                {
+                    float t = (float)i / SampleRate;
+                    float ping1 = Mathf.Sin(2f * Mathf.PI * 1400f * t) * Mathf.Exp(-t * 45f);
+                    float noise1 = ((float)rng.NextDouble() * 2f - 1f) * Mathf.Exp(-t * 60f) * 0.3f;
+                    float ping2 = t >= 0.08f ? Mathf.Sin(2f * Mathf.PI * 1250f * (t - 0.08f)) * Mathf.Exp(-(t - 0.08f) * 55f) * 0.6f : 0f;
+                    float ping3 = t >= 0.15f ? Mathf.Sin(2f * Mathf.PI * 1100f * (t - 0.15f)) * Mathf.Exp(-(t - 0.15f) * 65f) * 0.35f : 0f;
+                    data[i] = Mathf.Clamp((ping1 + noise1 + ping2 + ping3) * 0.85f, -1f, 1f);
+                }
+                SaveWav(baseDir + "Player/sfx_distraction_impact.wav", data);
+            }
+
             AssetDatabase.Refresh();
             Debug.Log("<color=green>AudioSynthesizer: All 14 audio clips generated and refreshed!</color>");
         }

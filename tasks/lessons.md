@@ -19,3 +19,8 @@
 * **Symptom:** Rule conflict between AGENTS.md mandating New Input System while university curriculum and imported controller use Legacy Input Manager.
 * **Root Cause:** Incomplete alignment between general project guidelines and course curriculum requirements.
 * **Prevention Rule:** For university academic projects, adhere strictly to the instructor-approved input system (Legacy Input Manager) and ensure all scripts use consistent input methods without unsupported packages.
+
+## Pattern 5: Unity Background Compilation and Play Mode Frame Ticking
+* **Symptom:** Unity Editor remains stuck with `EditorApplication.isCompiling == true`, or game loop frame count fails to advance during headless Play Mode testing.
+* **Root Cause:** Orphaned IL post-processor runner processes (`Unity.ILPP.Runner`) can stall compilation named pipes, and unfocused Unity Editors throttle frame execution when `Application.runInBackground` is false.
+* **Prevention Rule:** Clear stalled compiler runner processes before domain reload and enforce `Application.runInBackground = true` during headless automated Play Mode test runs.

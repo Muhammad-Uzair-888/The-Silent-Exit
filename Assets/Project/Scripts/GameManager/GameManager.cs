@@ -28,13 +28,21 @@ namespace SilentExit.GameManager
         public GameObject exitTriggerObject;
 
         [Header("Game State")]
+        public bool isGameStarted = false;
         public bool isGameOver = false;
         public bool isVictory = false;
         public bool isRespawning = false;
+        public bool isTimeExceeded = false;
+
+        [Header("Global Level Timer")]
+        public float maxLevelTime = 60.0f;
+        public float currentLevelTime = 60.0f;
+        public bool isTimerRunning = false;
 
         [Header("Respawn Timing")]
         public float respawnDelay = 1.5f;
         private float respawnTimer = 0f;
+        private Vector3 initialSpawnPosition;
 
         // Player physics and movement script references
         private Rigidbody playerRb;
@@ -52,7 +60,8 @@ namespace SilentExit.GameManager
             {
                 playerRb = player.GetComponent<Rigidbody>();
                 playerFpc = player.GetComponent<FirstPersonController>();
-                currentRespawnPosition = player.transform.position;
+                initialSpawnPosition = player.transform.position;
+                currentRespawnPosition = initialSpawnPosition;
             }
 
             // Find monster if not assigned in Inspector
@@ -102,40 +111,139 @@ namespace SilentExit.GameManager
             // Lock exit initially until CP3 is unlocked
             SetExitState(false);
 
-            // Set starting lives
+            // Set starting lives and timer
             currentLives = maxLives;
+            currentLevelTime = maxLevelTime;
+            isTimerRunning = false;
+            isGameStarted = false;
+
             if (uiManager != null)
             {
                 uiManager.UpdateHearts(currentLives);
+                uiManager.UpdateTimerDisplay(currentLevelTime, maxLevelTime);
+                uiManager.ShowTitleScreen();
+            }
+
+            // Lock movement and camera, and unlock cursor for Title Screen
+            if (playerFpc != null)
+            {
+                playerFpc.playerCanMove = false;
+                playerFpc.cameraCanMove = false;
+                playerFpc.lockCursor = false;
+            }
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        // Called when player clicks the PLAY button on Title Screen
+        public void StartGame()
+        {
+            isGameStarted = true;
+            isTimerRunning = true;
+            currentLevelTime = maxLevelTime;
+
+            if (playerFpc != null)
+            {
+                playerFpc.playerCanMove = true;
+                playerFpc.cameraCanMove = true;
+                playerFpc.lockCursor = true;
+            }
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
+            if (uiManager != null)
+            {
+                uiManager.HideTitleScreen();
+                uiManager.UpdateTimerDisplay(currentLevelTime, maxLevelTime);
             }
         }
 
         void Update()
         {
-            // Simple respawn timer using Time.deltaTime instead of coroutines
+            // 1. Continuous 60-second level countdown timer
+            if (isTimerRunning && !isGameOver && !isVictory && !isTimeExceeded)
+            {
+                currentLevelTime -= Time.deltaTime;
+                if (currentLevelTime <= 0f)
+                {
+                    currentLevelTime = 0f;
+                    TriggerTimeExceeded();
+                }
+
+                if (uiManager != null)
+                {
+                    uiManager.UpdateTimerDisplay(currentLevelTime, maxLevelTime);
+                }
+            }
+
+            // 2. Simple death/respawn fade and player repositioning (no coroutines)
             if (isRespawning)
             {
                 respawnTimer += Time.deltaTime;
 
-                // Halfway through the delay, teleport player to current checkpoint
-                if (respawnTimer >= 0.75f && player != null)
+                // Screen fades transparent -> black over first half (0 to 0.75s)
+                if (respawnTimer <= 0.75f)
                 {
-                    player.transform.position = currentRespawnPosition;
-                    if (playerRb != null)
+                    float alphaIn = Mathf.Clamp01(respawnTimer / 0.75f);
+                    if (uiManager != null)
                     {
-                        playerRb.velocity = Vector3.zero;
-                        playerRb.angularVelocity = Vector3.zero;
+                        uiManager.SetFadeAlpha(alphaIn);
+                    }
+                }
+                // Screen fades black -> transparent over second half (0.75 to 1.5s)
+                else
+                {
+                    float alphaOut = Mathf.Clamp01((respawnDelay - respawnTimer) / 0.75f);
+                    if (uiManager != null)
+                    {
+                        uiManager.SetFadeAlpha(alphaOut);
                     }
                 }
 
-                // Once the full delay has passed, re-enable player movement
+                // Exactly halfway through the delay (0.75s), reposition player and reset checkpoint progress
+                if (respawnTimer >= 0.75f && respawnTimer - Time.deltaTime < 0.75f)
+                {
+                    // Reset checkpoint progress according to updated game mechanics
+                    currentCheckpointIndex = 0;
+                    currentRespawnPosition = initialSpawnPosition;
+                    SetExitState(false);
+
+                    // Reset checkpoint triggers so they can be re-activated
+                    SilentExit.Checkpoints.CheckpointTrigger[] cps = FindObjectsOfType<SilentExit.Checkpoints.CheckpointTrigger>();
+                    for (int i = 0; i < cps.Length; i++)
+                    {
+                        cps[i].ResetCheckpoint();
+                    }
+
+                    if (player != null)
+                    {
+                        player.transform.position = initialSpawnPosition;
+                        if (playerRb != null)
+                        {
+                            playerRb.velocity = Vector3.zero;
+                            playerRb.angularVelocity = Vector3.zero;
+                        }
+                    }
+                }
+
+                // Once the full delay has passed, end respawn and re-enable movement if alive
                 if (respawnTimer >= respawnDelay)
                 {
                     isRespawning = false;
                     respawnTimer = 0f;
-                    if (playerFpc != null)
+                    if (uiManager != null)
+                    {
+                        uiManager.SetFadeAlpha(0f);
+                    }
+
+                    if (playerFpc != null && !isGameOver && !isTimeExceeded)
                     {
                         playerFpc.playerCanMove = true;
+                        playerFpc.cameraCanMove = true;
+                        playerFpc.lockCursor = true;
+                        Cursor.lockState = CursorLockMode.Locked;
+                        Cursor.visible = false;
                     }
                 }
             }
@@ -188,7 +296,7 @@ namespace SilentExit.GameManager
         // Called when the Golem attacks and catches the player
         public void OnPlayerCaught()
         {
-            if (isRespawning || isGameOver || isVictory)
+            if (isRespawning || isGameOver || isVictory || isTimeExceeded)
             {
                 return;
             }
@@ -219,6 +327,7 @@ namespace SilentExit.GameManager
                 if (playerFpc != null)
                 {
                     playerFpc.playerCanMove = false;
+                    playerFpc.cameraCanMove = false;
                 }
 
                 // Reset the Golem back to its patrol route
@@ -241,9 +350,12 @@ namespace SilentExit.GameManager
         private void TriggerGameOver()
         {
             isGameOver = true;
+            isTimerRunning = false;
             if (playerFpc != null)
             {
                 playerFpc.playerCanMove = false;
+                playerFpc.cameraCanMove = false;
+                playerFpc.lockCursor = false;
             }
             if (uiManager != null)
             {
@@ -251,10 +363,27 @@ namespace SilentExit.GameManager
             }
         }
 
+        // Called when the 60-second level countdown reaches zero
+        private void TriggerTimeExceeded()
+        {
+            isTimeExceeded = true;
+            isTimerRunning = false;
+            if (playerFpc != null)
+            {
+                playerFpc.playerCanMove = false;
+                playerFpc.cameraCanMove = false;
+                playerFpc.lockCursor = false;
+            }
+            if (uiManager != null)
+            {
+                uiManager.ShowTimeExceeded();
+            }
+        }
+
         // Called by ExitTrigger when player enters the F1 exit door
         public void OnPlayerReachedExit()
         {
-            if (isGameOver || isVictory)
+            if (isGameOver || isVictory || isTimeExceeded)
             {
                 return;
             }
@@ -262,9 +391,12 @@ namespace SilentExit.GameManager
             if (currentCheckpointIndex >= 3)
             {
                 isVictory = true;
+                isTimerRunning = false;
                 if (playerFpc != null)
                 {
                     playerFpc.playerCanMove = false;
+                    playerFpc.cameraCanMove = false;
+                    playerFpc.lockCursor = false;
                 }
                 if (uiManager != null)
                 {

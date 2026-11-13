@@ -7,7 +7,8 @@ namespace SilentExit.Audio
     {
         Footstep,
         SprintFootstep,
-        WaterSplash
+        WaterSplash,
+        Distraction
     }
 
     // Explicit named C# delegate as taught in university programming class
