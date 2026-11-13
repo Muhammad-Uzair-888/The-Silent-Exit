@@ -1,4 +1,4 @@
-﻿// CHANGE LOG
+// CHANGE LOG
 // 
 // CHANGES || version VERSION
 //
@@ -78,6 +78,7 @@ public class FirstPersonController : MonoBehaviour
     public bool hideBarWhenFull = true;
     public Image sprintBarBG;
     public Image sprintBar;
+    public Slider sprintSlider;
     public float sprintBarWidthPercent = .3f;
     public float sprintBarHeightPercent = .015f;
 
@@ -317,7 +318,14 @@ public class FirstPersonController : MonoBehaviour
             if(useSprintBar && !unlimitedSprint)
             {
                 float sprintRemainingPercent = sprintRemaining / sprintDuration;
-                sprintBar.transform.localScale = new Vector3(sprintRemainingPercent, 1f, 1f);
+                if (sprintBar != null)
+                {
+                    sprintBar.transform.localScale = new Vector3(sprintRemainingPercent, 1f, 1f);
+                }
+                if (sprintSlider != null)
+                {
+                    sprintSlider.value = sprintRemainingPercent;
+                }
             }
         }
 
@@ -660,6 +668,11 @@ public class FirstPersonController : MonoBehaviour
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PrefixLabel(new GUIContent("Bar", "Object to be used as sprint bar foreground."));
             fpc.sprintBar = (Image)EditorGUILayout.ObjectField(fpc.sprintBar, typeof(Image), true);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel(new GUIContent("Bar Slider", "Slider object to be used as sprint stamina slider."));
+            fpc.sprintSlider = (Slider)EditorGUILayout.ObjectField(fpc.sprintSlider, typeof(Slider), true);
             EditorGUILayout.EndHorizontal();
 
 

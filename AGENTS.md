@@ -11,7 +11,7 @@
 - Do not hand-author or edit .meta files. Unity generates them.
 
 ## Input rules
-- New scripts use the Input System package (Both).
+- Scripts use the Legacy Input System (Input Manager).
 - Exception: Assets/_Project/ThirdParty/ModularFirstPersonController uses the legacy Input Manager. Do not edit its scripts, and do not rewrite its input code.
 
 ## Project rules
