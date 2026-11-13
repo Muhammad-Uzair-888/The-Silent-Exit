@@ -28,6 +28,9 @@ namespace SilentExit.UI
         public GameObject victoryPanel;
         public Button victoryRestartButton;
 
+        [Header("Audio Settings")]
+        public Toggle audioMuteToggle;
+
         // Timer for showing the checkpoint banner without using coroutines
         private float bannerTimer = 0f;
         private bool isBannerShowing = false;
@@ -46,6 +49,21 @@ namespace SilentExit.UI
             if (victoryPanel != null)
             {
                 victoryPanel.SetActive(false);
+            }
+
+            // Hook up audio mute toggle if assigned
+            if (audioMuteToggle == null)
+            {
+                audioMuteToggle = GetComponentInChildren<Toggle>(true);
+                if (audioMuteToggle == null)
+                {
+                    audioMuteToggle = FindObjectOfType<Toggle>();
+                }
+            }
+
+            if (audioMuteToggle != null)
+            {
+                audioMuteToggle.onValueChanged.AddListener(OnAudioToggleChanged);
             }
         }
 
@@ -124,6 +142,12 @@ namespace SilentExit.UI
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
+        }
+
+        // Toggles game audio muting using Unity's AudioListener
+        public void OnAudioToggleChanged(bool isMuted)
+        {
+            AudioListener.pause = isMuted;
         }
     }
 }

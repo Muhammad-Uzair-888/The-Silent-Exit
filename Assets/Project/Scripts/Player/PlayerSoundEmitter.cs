@@ -20,10 +20,10 @@ namespace SilentExit.Player
         public float sprintStepInterval = 0.32f;
         public float waterStepInterval = 0.4f;
 
-        [Header("Audio Output (Optional)")]
+        [Header("Audio Output")]
         public AudioSource audioSource;
-        public AudioClip[] walkClips;
-        public AudioClip[] sprintClips;
+        public AudioClip[] carpetClips;
+        public AudioClip[] tileClips;
         public AudioClip[] splashClips;
 
         // References to player components
@@ -107,12 +107,28 @@ namespace SilentExit.Player
             else if (isSprinting)
             {
                 SoundSystem.EmitSound(soundPosition, sprintSoundRadius, SoundType.SprintFootstep);
-                PlaySoundClip(sprintClips);
+                // Backrooms (X < 0) has carpet; Poolrooms (X >= 0) has tile
+                if (soundPosition.x < 0f)
+                {
+                    PlaySoundClip(carpetClips);
+                }
+                else
+                {
+                    PlaySoundClip(tileClips);
+                }
             }
             else
             {
                 SoundSystem.EmitSound(soundPosition, walkSoundRadius, SoundType.Footstep);
-                PlaySoundClip(walkClips);
+                // Backrooms (X < 0) has carpet; Poolrooms (X >= 0) has tile
+                if (soundPosition.x < 0f)
+                {
+                    PlaySoundClip(carpetClips);
+                }
+                else
+                {
+                    PlaySoundClip(tileClips);
+                }
             }
         }
 
