@@ -14,3 +14,8 @@
 * **Symptom:** Water rendered opaque or unshaded in URP.
 * **Root Cause:** Built-in shaders without `UniversalForward` passes are skipped or error-rendered by URP. In addition, URP pipeline assets default to `supportsCameraDepthTexture = false` and `supportsCameraOpaqueTexture = false`.
 * **Prevention Rule:** In URP projects, always verify pipeline asset depth and opaque texture toggles and ensure water shaders use UniversalForward passes with `MixFog` support.
+
+## Pattern 4: University Curriculum Alignment and Legacy Input
+* **Symptom:** Rule conflict between AGENTS.md mandating New Input System while university curriculum and imported controller use Legacy Input Manager.
+* **Root Cause:** Incomplete alignment between general project guidelines and course curriculum requirements.
+* **Prevention Rule:** For university academic projects, adhere strictly to the instructor-approved input system (Legacy Input Manager) and ensure all scripts use consistent input methods without unsupported packages.
